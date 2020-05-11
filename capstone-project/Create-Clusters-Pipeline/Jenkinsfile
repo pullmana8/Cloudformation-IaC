@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Create Kubernetes cluster') {
             steps {
-                withAWS(region:'us-east-2', credentials:'ecr_credentials') {
+                withAWS(region:'us-east-2', credentials:'jenkins-admin') {
                     sh '''
                         eksctl create cluster \
                         --name finalCluster \
@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Create conf file cluster') {
             steps {
-                withAWS(region:'us-east-2', credentials:'ecr_credentials') {
+                withAWS(region:'us-east-2', credentials:'jenkins-admin') {
                     sh '''
                         aws eks --region us-east-2 update-kubeconfig --name finalCluster
                         '''
