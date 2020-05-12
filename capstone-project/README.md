@@ -21,6 +21,11 @@
 
 ---
 
+* AWS CLI v2
+* Docker
+* Java 11
+* Jenkins
+
 ## Key Things to Look For
 
 ---
