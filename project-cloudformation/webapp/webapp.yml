@@ -71,7 +71,7 @@ Resources:
           systemctl start apache2.service
           cd /var/www/html
           aws s3 sync s3://${ApplicationS3Bucket} /var/www/html
-      ImageId: ami-07b4f3c02c7f83d59
+      ImageId: ami-085925f297f89fce1
       KeyName:
         Fn::ImportValue:
             !Sub ${EnvironmentName}-BASTION-HOST-SSH-KEY-NAME
