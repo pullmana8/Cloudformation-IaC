@@ -1,0 +1,14 @@
+[
+    {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "UdacityProject"
+    },
+    {
+    "ParameterKey": "DNSProtocol",
+    "ParameterValue": "http://"
+    },
+    {
+    "ParameterKey": "ApplicationS3Bucket",
+    "ParameterValue": "acaldwell-cfn-project"
+    }
+]
