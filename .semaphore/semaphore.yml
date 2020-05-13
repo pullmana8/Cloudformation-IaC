@@ -6,8 +6,35 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-  
+
+blocks:
+  - name: Test Zeit project
+    dependencies: []
+    run:
+      when: "change_in('/capstone-project/deploy-to-zeit-now')"
+    task:
+      jobs:
+        - commands:
+          - checkout
+          - cd capstone-project/deploy-to-zeit-now
+            - nvm use
+            - node --version
+            - npm --version
+            - cache restore
+            - npm install
+            - cache store
+
 promotions:
+  - name: Deploy to staging
+    pipeline_file: deploy-staging.yml
+    auto_promote:
+      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now')"
+
+  - name: Deploy to production
+    pipeline_file: deploy-production.yml
+    auto_promote:
+      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now')"
+
   - name: Dockerize
     pipeline_file: docker-build.yml
     auto_promote_on:
