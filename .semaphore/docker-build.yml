@@ -17,5 +17,6 @@ blocks:
         - name: Build and push
           commands:
             - checkout
-            - docker build -t "${DOCKER_USERNAME}"/nginx:latest .
-            - docker push "${DOCKER_USERNAME}"/nginx:latest
+            - docker build -t nginx:v1 .
+            - docker tag nginx:v1 "$DOCKER_USERNAME"/nginx:v1
+            - docker push "${DOCKER_USERNAME}"/nginx:v1
