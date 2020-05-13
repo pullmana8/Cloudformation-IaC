@@ -14,15 +14,16 @@ blocks:
       when: "change_in('/capstone-project/deploy-to-zeit-now/')"
     task:
       jobs:
-        - commands:
-          - checkout
-          - cd capstone-project/deploy-to-zeit-now
-          - nvm use
-          - node --version
-          - npm --version
-          - cache restore
-          - npm install
-          - cache store
+        - name: npm install and cache
+          commands:
+            - checkout zeit-now
+            - cd capstone-project/deploy-to-zeit-now
+            - nvm use
+            - node --version
+            - npm --version
+            - cache restore
+            - npm install
+            - cache store
 
 promotions:
   - name: Deploy to staging
