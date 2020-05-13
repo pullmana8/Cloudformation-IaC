@@ -17,12 +17,12 @@ blocks:
         - commands:
           - checkout
           - cd capstone-project/deploy-to-zeit-now
-            - nvm use
-            - node --version
-            - npm --version
-            - cache restore
-            - npm install
-            - cache store
+          - nvm use
+          - node --version
+          - npm --version
+          - cache restore
+          - npm install
+          - cache store
 
 promotions:
   - name: Deploy to staging
@@ -34,8 +34,3 @@ promotions:
     pipeline_file: deploy-production.yml
     auto_promote:
       when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now/')"
-
-  - name: Dockerize
-    pipeline_file: docker-build.yml
-    auto_promote_on:
-      - result: passed
