@@ -11,7 +11,7 @@ blocks:
   - name: Test Zeit project
     dependencies: []
     run:
-      when: "change_in('/capstone-project/deploy-to-zeit-now')"
+      when: "change_in('/capstone-project/deploy-to-zeit-now/')"
     task:
       jobs:
         - commands:
@@ -28,12 +28,12 @@ promotions:
   - name: Deploy to staging
     pipeline_file: deploy-staging.yml
     auto_promote:
-      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now')"
+      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now/')"
 
   - name: Deploy to production
     pipeline_file: deploy-production.yml
     auto_promote:
-      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now')"
+      when: "branch = zeit-now' and result = 'passed' and change_in('/capstone-project/deploy-to-zeit-now/')"
 
   - name: Dockerize
     pipeline_file: docker-build.yml
