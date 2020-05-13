@@ -1,0 +1,18 @@
+[
+    {
+    "ParameterKey": "EnvironmentName",
+    "ParameterValue": "UdacityProject"
+    },
+    {
+    "ParameterKey": "NetworkAccessIP",
+    "ParameterValue": "144.136.38.245/32"
+    },
+    {
+    "ParameterKey": "BastionHostSSHS3Bucket",
+    "ParameterValue": "udacity-cfn-keys"
+    },
+    {
+    "ParameterKey": "BastionHostSSHKeyName",
+    "ParameterValue": "cfn-key-bastion"
+    }
+]
