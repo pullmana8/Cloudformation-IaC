@@ -1,10 +1,9 @@
-version: "v1.0"
+version: v1.0
 name: Build and push
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu1804
-
 blocks:
   - name: Build and push
     task:
@@ -12,11 +11,11 @@ blocks:
         - name: dockerhub-secrets
       prologue:
         commands:
-          - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          - 'echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin'
       jobs:
         - name: Build and push
           commands:
             - checkout
-            - docker build -t nginx:v1 .
-            - docker tag nginx:v1 "$DOCKER_USERNAME"/nginx:v1
-            - docker push "${DOCKER_USERNAME}"/nginx:v1
+            - 'docker build -t nginx:v1 .'
+            - 'docker tag nginx:v1 "$DOCKER_USERNAME"/nginx:v1'
+            - 'docker push "${DOCKER_USERNAME}"/nginx:v1'
