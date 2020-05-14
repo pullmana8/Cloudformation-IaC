@@ -36,7 +36,7 @@ pipeline {
         }
     stage('Set current kubectl context') {
             steps {
-                withAWS(region:'us-east-1', credentials:'jenkins_creds') {
+                withAWS(region:'us-east-2', credentials:'jenkins_creds') {
                     sh '''
                         kubectl config use-context arn:aws:eks:us-east-2:663355930064:cluster/finalCluster
                     '''
