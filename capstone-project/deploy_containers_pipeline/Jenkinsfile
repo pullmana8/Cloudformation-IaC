@@ -1,27 +1,6 @@
 pipeline {
     agent any
     stages {
-    stage('Create Kubernetes cluster') {
-            steps {
-                withAWS(region:'us-east-2', credentials:'jenkins_creds') {
-                    sh '''
-                        eksctl create cluster \
-                        --name finalCluster \
-                        --version 1.15 \
-                        --nodegroup-name standard-workers \
-                        --node-type t2.small \
-                        --nodes 2 \
-                        --nodes-min 1 \
-                        --nodes-max 3 \
-                        --node-ami auto \
-                        --region us-east-2 \
-                        --zones us-east-2a \
-                        --zones us-east-2b \
-                        --zones us-east-2c \
-                        '''
-                }
-            }
-        }
         stage('Create conf file cluster') {
             steps {
                 withAWS(region:'us-east-2', credentials:'jenkins_creds') {
@@ -33,7 +12,7 @@ pipeline {
         }
         stage('Lint HTML') {
             steps {
-                sh 'tidy -q -e *.html'
+                sh 'tidy -q -e capstone-project/deply_containers_pipeline/*.html'
             }
         }
         stage('Build Docker image') {
