@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: nginx-service-test-{{TARGET_ROLE}}
+  labels:
+    app: nginx
+    role: {{TARGET_ROLE}}
+spec:
+  type: LoadBalancer
+  selector:
+    app: nginx
+    role: {{TARGET_ROLE}}
+  ports:
+    - port: 80
+      targetPort: 80
