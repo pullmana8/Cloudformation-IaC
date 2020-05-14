@@ -33,7 +33,7 @@ pipeline {
         }
         stage('Lint HTML') {
             steps {
-                sh 'tidy -q -e Deploy-Containers-Pipeline/*.html'
+                sh 'tidy -q -e *.html'
             }
         }
         stage('Build Docker image') {

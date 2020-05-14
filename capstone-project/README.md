@@ -23,6 +23,7 @@ This project is the capstone for Cloud DevOps Nanodegree program which comprise 
 * Jenkins
 * eksctl
 * Kubectl
+* tidy
 
 ## Key Things to Look For
 
@@ -31,4 +32,5 @@ Plugins Needed:
 * Blue Ocean
 * CloudBees AWS Credentials
 * AWS CodePipeline (optional)
+* AWS Steps
 
