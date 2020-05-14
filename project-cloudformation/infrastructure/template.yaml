@@ -1,0 +1,383 @@
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: An environment name
+
+  PrivateSubnet2CIDR:
+    Type: String
+    Default: "10.0.3.0/24"
+    Description: Private Subnet CIDR
+
+  PrivateSubnetCidr:
+    Type: String
+    Default: "10.0.2.0/24"
+    Description: Public Subnet CIDR
+
+  PublicSubnet1CIDR:
+    Type: String
+    Default: "10.0.0.0/24"
+    Description: Public Subnet CIDR
+
+  PublicSubnet2CIDR:
+    Type: String
+    Default: "10.0.1.0/24"
+    Description: Public Subnet CIDR
+
+  VpcCIDR:
+    Type: String
+    Default: "10.0.0.0/16"
+    Description: The IP address space for this VPC, in CIDR notation
+
+  InstanceType:
+    Description: 
+      "The EC2 instance type of general purpose"
+    Type: String
+    AllowedValues: [t2.micro, t2.medium,  t3.small, t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge, t3.2xlarge]
+
+  ApplicationS3Bucket:
+    Description: Bucket name for Application
+    Type: String
+
+Resources:
+  ALBListenerRule:
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref WebAppTargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+      ListenerArn: !Ref Listener
+      Priority: 1
+
+  DefaultPrivateRoute:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+
+  DefaultPrivateRoute2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+
+  DefaultPublicRoute:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+
+  DefaultPublicRoute2:
+    Type: "AWS::EC2::RouteTable"
+    Properties:
+      VpcId: !Ref VPC
+
+  InternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  InternetGatewayAttachment:
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  LBSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allow http to our load balancer
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId: !ImportValue
+        "Fn::Sub": ${EnvironmentName}-VPCID
+
+  Listener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref WebAppTargetGroup
+      LoadBalancerArn: !Ref WebAppLB
+      Port: 80
+      Protocol: HTTP
+
+  NatGateway:
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet
+
+  NatGateway1EIP:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: vpc
+
+  NatGateway2:
+    Type: "AWS::EC2::NatGateway"
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+
+  NatGateway2EIP:
+    Type: "AWS::EC2::EIP"
+    Properties:
+      Domain: vpc
+
+  NatRoute:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref NatGateway
+      RouteTableId: !Ref DefaultPrivateRoute
+
+  NatRoute2:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: "0.0.0.0/0"
+      NatGatewayId: !Ref NatGateway2
+      RouteTableId: !Ref DefaultPrivateRoute2
+
+  PrivateSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PrivateSubnetCidr
+      MapPublicIpOnLaunch: "false"
+      VpcId: !Ref VPC
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref DefaultPrivateRoute
+      SubnetId: !Ref PrivateSubnet
+
+  PrivateSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PrivateSubnet2CIDR
+      MapPublicIpOnLaunch: "false"
+      VpcId: !Ref VPC
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref DefaultPrivateRoute2
+      SubnetId: !Ref PrivateSubnet2
+
+  PublicSubnet:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PublicSubnet1CIDR
+      MapPublicIpOnLaunch: "true"
+      VpcId: !Ref VPC
+
+  PublicSubnet1RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref DefaultPublicRoute
+      SubnetId: !Ref PublicSubnet
+
+  PublicSubnet2:
+    Type: "AWS::EC2::Subnet"
+    Properties:
+      AvailabilityZone: !Select
+        - 1
+        - "Fn::GetAZs": ""
+      CidrBlock: !Ref PublicSubnet2CIDR
+      MapPublicIpOnLaunch: "true"
+      VpcId: !Ref VPC
+
+  PublicSubnet2RouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref DefaultPublicRoute2
+      SubnetId: !Ref PublicSubnet2
+
+  RolePolicies:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      Path: /
+      Roles:
+        - Ref: S3ReadOnlyEC2
+
+  S3ReadOnlyEC2:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumePolicyDocument:
+        Path: /
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+        Version: "2012-10-17"
+      RoleName: !Sub ${EnvironmentName}-Role
+
+  VPC:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref EnvironmentName
+
+  LoadBalancerSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our load balancer
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+
+  WebAppGroup:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      LaunchConfigurationName: !Ref WebAppLaunchConfig
+      MaxSize: "6"
+      MinSize: "4"
+      TargetGroupARNs:
+        - Ref: WebAppTargetGroup
+      VPCZoneIdentifier:
+        - Ref: PrivateSubnet
+        - Ref: PrivateSubnet2
+
+  WebAppLB:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      SecurityGroups:
+        - Ref: LoadBalancerSecGroup
+      Subnets:
+        - Ref: PublicSubnet
+        - Ref: PublicSubnet2
+
+  WebAppLaunchConfig:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    Properties:
+      UserData: !Base64
+        "Fn::Sub": "#!/bin/bash\napt-get update -y\napt-get install unzip awscli -y\napt-get install apache2 -y\nsystemctl start apache2.service\ncd /var/www/html\naws s3 sync s3://${ApplicationS3Bucket} /var/www/html\n"
+      ImageId: ami-07c1207a9d40bc3bd
+      InstanceType: !Ref InstanceType
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdk
+          Ebs:
+            VolumeSize: "10"
+      IamInstanceProfile: !Ref RolePolicies
+      SecurityGroups:
+        - Ref: WebServerSecGroup
+
+  WebAppTargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: !Ref VPC
+
+  WebServerSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Allow http to our hosts and SHH for local only
+      SecurityGroupEgress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 0
+          IpProtocol: tcp
+          ToPort: 65535
+      SecurityGroupIngress:
+        - CidrIp: "0.0.0.0/0"
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
+      VpcId: !ImportValue
+        "Fn::Sub": ${EnvironmentName}-VPCID
+
+Outputs:
+  VPC: 
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${EnvironmentName}-VPCID
+  VPCPublicRouteTable:
+    Description: Public Routing
+    Value: !Ref DefaultPublicRoute
+    Export:
+      Name: !Sub ${EnvironmentName}-PUB-RT
+  VPCPrivateRouteTable1:
+    Description: Private Routing AZ1
+    Value: !Ref DefaultPrivateRoute
+    Export:
+      Name: !Sub ${EnvironmentName}-PRI1-RT
+  VPCPrivateRouteTable2:
+    Description: Private Routing AZ2
+    Value: !Ref DefaultPrivateRoute2
+    Export:
+      Name: !Sub ${EnvironmentName}-PRI2-RT
+  PublicSubnets:
+    Description: A list of public subnets
+    Value: !Join [ ",", [ !Ref PublicSubnet, !Ref PublicSubnet2 ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-PUB-NETS
+  PublicSubnet1:
+    Description: A reference to the public subnet in the 1st Availability Zone
+    Value: !Ref PublicSubnet
+    Export:
+      Name: !Sub ${EnvironmentName}-PUB1-SN
+  PublicSubnet2:
+    Description: A reference to the public subnet in the 2nd Availability Zone
+    Value: !Ref PublicSubnet2
+    Export:
+      Name: !Sub ${EnvironmentName}-PUB2-SN
+  PrivateSubnets:
+    Description: A list of private subnets
+    Value: !Join [ ",", [ !Ref PrivateSubnet, !Ref PrivateSubnet2 ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-PRI-NETS
+  PrivateSubnet1:
+    Description: A reference to the private subnet in the 1st Availability Zone
+    Value: !Ref PrivateSubnet
+    Export:
+      Name: !Sub ${EnvironmentName}-PRI1-SN
+  PrivateSubnet2:
+    Description: A reference to the private subnet in the 2nd Availability Zone
+    Value: !Ref PrivateSubnet2
+    Export:
+      Name: !Sub ${EnvironmentName}-PRI2-SN
+  WebAppLoadBalancerDNSName:
+    Description: DNS name or Public URL of the Load Balancer
+    Value: !Join [ "", [ 'http://', !GetAtt WebAppLB.DNSName ]]
+    Export:
+      Name: !Sub ${EnvironmentName}-LB-DNSName

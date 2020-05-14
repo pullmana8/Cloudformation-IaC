@@ -8,7 +8,9 @@
 
 Change into the Infrastructure folder. Run the command below.
 
-`aws cloudformation create-stack --stack-name network --template-body file://infrastructure.yml --parameters file://parameters/infrastructure-params.json --capabilities CAPABILITY_IAM`
+`aws cloudformation create-stack --stack-name network --template-body file://template.yaml --parameters file://parameters/infrastructure-params.json --capabilities CAPABILITY_NAMED_IAM`
+
+`aws cloudformation update-stack --stack-name network --template-body file://template.yaml --parameters file://parameters/infrastructure-params.json --capabilities CAPABILITY_NAMED_IAM`
 
 ## Setup bastion server
 
