@@ -12,7 +12,7 @@ pipeline {
         }
         stage('Lint HTML') {
             steps {
-                sh 'tidy -q -e capstone-project/deply_containers_pipeline/*.html'
+                sh 'tidy -q -e *.html'
             }
         }
         stage('Build Docker image') {
